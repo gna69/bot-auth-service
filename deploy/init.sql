@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS users
     lastName     VARCHAR(64),
     userName     VARCHAR(64),
     languageCode VARCHAR(3),
-    isBot        BOOLEAN
+    isBot        BOOLEAN,
+    chatId       INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS groups
@@ -13,5 +14,6 @@ CREATE TABLE IF NOT EXISTS groups
     id      INTEGER primary key,
     ownerId INTEGER REFERENCES users (id) NOT NULL,
     name    VARCHAR(64),
-    members INTEGER ARRAY
+    members INTEGER ARRAY,
+    unique (id, name)
 );

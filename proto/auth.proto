@@ -7,7 +7,9 @@ service AuthService {
   rpc GetUserGroups(GroupsRequest) returns (GroupsRequest) {}
 
   rpc CreateGroup(Group) returns (Result) {}
-  rpc AddToGroup(AddToGroupRequest) returns (Result) {}
+  rpc RemoveGroup(Group) returns (Result) {}
+  rpc AddToGroup(GroupRequest) returns (Result) {}
+  rpc DeleteFromGroup(GroupRequest) returns (Result) {}
 }
 
 message GroupsRequest {
@@ -18,7 +20,7 @@ message GroupsResponse {
   repeated Group groups = 1;
 }
 
-message AddToGroupRequest {
+message GroupRequest {
   string addingUser = 1;
   int32 initiatorId = 2;
   int32 groupId = 3;
@@ -31,6 +33,7 @@ message User {
   string userName = 4;
   string languageCode = 5;
   bool isBot = 6;
+  uint64 chatId = 7;
 }
 
 message Group {
