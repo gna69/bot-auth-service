@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+option go_package = "github.com/gna69/bot-auth-service/proto";
+
+service AuthService {
+  rpc AuthUser(User) returns (Result) {}
+  rpc GetUserGroups(GroupsRequest) returns (GroupsRequest) {}
+
+  rpc CreateGroup(Group) returns (Result) {}
+  rpc AddToGroup(AddToGroupRequest) returns (Result) {}
+}
+
+message GroupsRequest {
+  int32 ownerId = 1;
+}
+
+message GroupsResponse {
+  repeated Group groups = 1;
+}
+
+message AddToGroupRequest {
+  string addingUser = 1;
+  int32 initiatorId = 2;
+  int32 groupId = 3;
+}
+
+message User {
+  int32 id = 1;
+  string firstName = 2;
+  string lastName = 3;
+  string userName = 4;
+  string languageCode = 5;
+  bool isBot = 6;
+}
+
+message Group {
+  int32 id = 1;
+  int32 ownerId = 2;
+  string name = 3;
+  repeated User members = 4;
+}
+
+message Result {
+  Status status = 1;
+  string token = 2;
+}
+
+enum Status {
+  SUCCESS = 0;
+  ERROR = 1;
+}
