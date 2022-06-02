@@ -25,7 +25,9 @@ type AuthServiceClient interface {
 	AuthUser(ctx context.Context, in *User, opts ...grpc.CallOption) (*Result, error)
 	GetUserGroups(ctx context.Context, in *GroupsRequest, opts ...grpc.CallOption) (*GroupsRequest, error)
 	CreateGroup(ctx context.Context, in *Group, opts ...grpc.CallOption) (*Result, error)
-	AddToGroup(ctx context.Context, in *AddToGroupRequest, opts ...grpc.CallOption) (*Result, error)
+	RemoveGroup(ctx context.Context, in *Group, opts ...grpc.CallOption) (*Result, error)
+	AddToGroup(ctx context.Context, in *GroupRequest, opts ...grpc.CallOption) (*Result, error)
+	DeleteFromGroup(ctx context.Context, in *GroupRequest, opts ...grpc.CallOption) (*Result, error)
 }
 
 type authServiceClient struct {
@@ -63,9 +65,27 @@ func (c *authServiceClient) CreateGroup(ctx context.Context, in *Group, opts ...
 	return out, nil
 }
 
-func (c *authServiceClient) AddToGroup(ctx context.Context, in *AddToGroupRequest, opts ...grpc.CallOption) (*Result, error) {
+func (c *authServiceClient) RemoveGroup(ctx context.Context, in *Group, opts ...grpc.CallOption) (*Result, error) {
+	out := new(Result)
+	err := c.cc.Invoke(ctx, "/AuthService/RemoveGroup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) AddToGroup(ctx context.Context, in *GroupRequest, opts ...grpc.CallOption) (*Result, error) {
 	out := new(Result)
 	err := c.cc.Invoke(ctx, "/AuthService/AddToGroup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) DeleteFromGroup(ctx context.Context, in *GroupRequest, opts ...grpc.CallOption) (*Result, error) {
+	out := new(Result)
+	err := c.cc.Invoke(ctx, "/AuthService/DeleteFromGroup", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +99,9 @@ type AuthServiceServer interface {
 	AuthUser(context.Context, *User) (*Result, error)
 	GetUserGroups(context.Context, *GroupsRequest) (*GroupsRequest, error)
 	CreateGroup(context.Context, *Group) (*Result, error)
-	AddToGroup(context.Context, *AddToGroupRequest) (*Result, error)
+	RemoveGroup(context.Context, *Group) (*Result, error)
+	AddToGroup(context.Context, *GroupRequest) (*Result, error)
+	DeleteFromGroup(context.Context, *GroupRequest) (*Result, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -96,8 +118,14 @@ func (UnimplementedAuthServiceServer) GetUserGroups(context.Context, *GroupsRequ
 func (UnimplementedAuthServiceServer) CreateGroup(context.Context, *Group) (*Result, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateGroup not implemented")
 }
-func (UnimplementedAuthServiceServer) AddToGroup(context.Context, *AddToGroupRequest) (*Result, error) {
+func (UnimplementedAuthServiceServer) RemoveGroup(context.Context, *Group) (*Result, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveGroup not implemented")
+}
+func (UnimplementedAuthServiceServer) AddToGroup(context.Context, *GroupRequest) (*Result, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddToGroup not implemented")
+}
+func (UnimplementedAuthServiceServer) DeleteFromGroup(context.Context, *GroupRequest) (*Result, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteFromGroup not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 
@@ -166,8 +194,26 @@ func _AuthService_CreateGroup_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_RemoveGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Group)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).RemoveGroup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/AuthService/RemoveGroup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).RemoveGroup(ctx, req.(*Group))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AuthService_AddToGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddToGroupRequest)
+	in := new(GroupRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -179,7 +225,25 @@ func _AuthService_AddToGroup_Handler(srv interface{}, ctx context.Context, dec f
 		FullMethod: "/AuthService/AddToGroup",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).AddToGroup(ctx, req.(*AddToGroupRequest))
+		return srv.(AuthServiceServer).AddToGroup(ctx, req.(*GroupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_DeleteFromGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GroupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).DeleteFromGroup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/AuthService/DeleteFromGroup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).DeleteFromGroup(ctx, req.(*GroupRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -204,8 +268,16 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AuthService_CreateGroup_Handler,
 		},
 		{
+			MethodName: "RemoveGroup",
+			Handler:    _AuthService_RemoveGroup_Handler,
+		},
+		{
 			MethodName: "AddToGroup",
 			Handler:    _AuthService_AddToGroup_Handler,
+		},
+		{
+			MethodName: "DeleteFromGroup",
+			Handler:    _AuthService_DeleteFromGroup_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
