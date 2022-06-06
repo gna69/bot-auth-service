@@ -18,13 +18,12 @@ var pgCfg struct {
 }
 
 func init() {
-	err := env.Parse(&pgCfg)
-	if err != nil {
+	if err := env.Parse(&pgCfg); err != nil {
 		log.Err(err)
 	}
 }
 
-func NewClient(ctx context.Context) (*pgx.Conn, error) {
+func NewPgClient(ctx context.Context) (*pgx.Conn, error) {
 	pgUrl := fmt.Sprintf("postgres://%s:%s@%s:%d/%s", pgCfg.Username, pgCfg.Password, pgCfg.Host, pgCfg.Port, pgCfg.Db)
 	conn, err := pgx.Connect(ctx, pgUrl)
 	if err != nil {

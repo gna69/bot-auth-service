@@ -23,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthServiceClient interface {
 	AuthUser(ctx context.Context, in *User, opts ...grpc.CallOption) (*Result, error)
-	GetUserGroups(ctx context.Context, in *GroupsRequest, opts ...grpc.CallOption) (*GroupsRequest, error)
+	GetUserGroups(ctx context.Context, in *GroupsRequest, opts ...grpc.CallOption) (*GroupsResponse, error)
 	CreateGroup(ctx context.Context, in *Group, opts ...grpc.CallOption) (*Result, error)
 	RemoveGroup(ctx context.Context, in *Group, opts ...grpc.CallOption) (*Result, error)
 	AddToGroup(ctx context.Context, in *GroupRequest, opts ...grpc.CallOption) (*Result, error)
@@ -47,8 +47,8 @@ func (c *authServiceClient) AuthUser(ctx context.Context, in *User, opts ...grpc
 	return out, nil
 }
 
-func (c *authServiceClient) GetUserGroups(ctx context.Context, in *GroupsRequest, opts ...grpc.CallOption) (*GroupsRequest, error) {
-	out := new(GroupsRequest)
+func (c *authServiceClient) GetUserGroups(ctx context.Context, in *GroupsRequest, opts ...grpc.CallOption) (*GroupsResponse, error) {
+	out := new(GroupsResponse)
 	err := c.cc.Invoke(ctx, "/AuthService/GetUserGroups", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -97,7 +97,7 @@ func (c *authServiceClient) DeleteFromGroup(ctx context.Context, in *GroupReques
 // for forward compatibility
 type AuthServiceServer interface {
 	AuthUser(context.Context, *User) (*Result, error)
-	GetUserGroups(context.Context, *GroupsRequest) (*GroupsRequest, error)
+	GetUserGroups(context.Context, *GroupsRequest) (*GroupsResponse, error)
 	CreateGroup(context.Context, *Group) (*Result, error)
 	RemoveGroup(context.Context, *Group) (*Result, error)
 	AddToGroup(context.Context, *GroupRequest) (*Result, error)
@@ -112,7 +112,7 @@ type UnimplementedAuthServiceServer struct {
 func (UnimplementedAuthServiceServer) AuthUser(context.Context, *User) (*Result, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AuthUser not implemented")
 }
-func (UnimplementedAuthServiceServer) GetUserGroups(context.Context, *GroupsRequest) (*GroupsRequest, error) {
+func (UnimplementedAuthServiceServer) GetUserGroups(context.Context, *GroupsRequest) (*GroupsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserGroups not implemented")
 }
 func (UnimplementedAuthServiceServer) CreateGroup(context.Context, *Group) (*Result, error) {

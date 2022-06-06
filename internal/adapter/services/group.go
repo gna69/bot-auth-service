@@ -30,7 +30,7 @@ func (s *GroupService) Delete(ctx context.Context, groupId int32) error {
 	return nil
 }
 
-func (s *GroupService) AddUser(ctx context.Context, addingUserId, ownerId, groupId int32) error {
+func (s *GroupService) AddUser(ctx context.Context, addingUserId string, ownerId, groupId int32) error {
 	groupMembers, err := s.getGroupMembers(ctx, groupId, ownerId)
 	if err != nil {
 		return err
@@ -41,14 +41,14 @@ func (s *GroupService) AddUser(ctx context.Context, addingUserId, ownerId, group
 	return s.setGroupMembers(ctx, groupMembers, groupId)
 }
 
-func (s *GroupService) RemoveUser(ctx context.Context, deletingUserId, ownerId, groupId int32) error {
+func (s *GroupService) RemoveUser(ctx context.Context, deletingUser string, ownerId, groupId int32) error {
 	groupMembers, err := s.getGroupMembers(ctx, groupId, ownerId)
 	if err != nil {
 		return err
 	}
 
 	for idx, member := range groupMembers {
-		if member == deletingUserId {
+		if member == deletingUser {
 			groupMembers[idx] = groupMembers[len(groupMembers)-1]
 			groupMembers = groupMembers[:len(groupMembers)-1]
 			break
@@ -58,9 +58,9 @@ func (s *GroupService) RemoveUser(ctx context.Context, deletingUserId, ownerId, 
 	return s.setGroupMembers(ctx, groupMembers, ownerId)
 }
 
-func (s *GroupService) getGroupMembers(ctx context.Context, groupId, ownerId int32) ([]int32, error) {
+func (s *GroupService) getGroupMembers(ctx context.Context, groupId, ownerId int32) ([]string, error) {
 	query := `SELECT members FROM groups WHERE id = $1 AND ownerId = $2;`
-	var groupMembers []int32
+	var groupMembers []string
 
 	row := s.conn.QueryRow(ctx, query, groupId, ownerId)
 
@@ -71,7 +71,7 @@ func (s *GroupService) getGroupMembers(ctx context.Context, groupId, ownerId int
 	return groupMembers, nil
 }
 
-func (s *GroupService) setGroupMembers(ctx context.Context, members []int32, groupId int32) error {
+func (s *GroupService) setGroupMembers(ctx context.Context, members []string, groupId int32) error {
 	query := `UPDATE groups SET members = $1 WHERE groupId = $2;`
 	if _, err := s.conn.Exec(ctx, query, members, groupId); err != nil {
 		return err

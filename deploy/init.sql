@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS groups
 (
     id      SERIAL primary key,
     ownerId INTEGER REFERENCES users (id) NOT NULL,
-    "name"    VARCHAR(64),
-    members INTEGER ARRAY,
+    "name"  VARCHAR(64),
+    members VARCHAR(255) ARRAY,
     unique (id, "name")
 );
