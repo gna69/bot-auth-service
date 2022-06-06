@@ -14,6 +14,13 @@ type GrpcServer struct {
 	GroupService usecase.GroupService
 }
 
+func NewGrpcServer(us usecase.UserService, gs usecase.GroupService) *GrpcServer {
+	return &GrpcServer{
+		UsersService: us,
+		GroupService: gs,
+	}
+}
+
 func (s *GrpcServer) AuthUser(ctx context.Context, user *proto.User) (*proto.Result, error) {
 	existed, err := s.UsersService.Get(ctx, user.GetId())
 	if err != nil {
