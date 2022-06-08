@@ -21,14 +21,34 @@ func NewGrpcServer(us usecase.UserService, gs usecase.GroupService) *GrpcServer 
 	}
 }
 
-func (s *GrpcServer) AuthUser(ctx context.Context, user *proto.User) (*proto.Result, error) {
+func (s *GrpcServer) AuthUser(ctx context.Context, user *proto.User) (*proto.AuthResponse, error) {
 	existed, err := s.UsersService.Get(ctx, user.GetId())
 	if err != nil {
 		return nil, err
 	}
 
 	if existed != nil {
-		return &proto.Result{Status: proto.Status_SUCCESS}, nil
+		groups, err := s.UsersService.GetMyGroups(ctx, user.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		groupsWhichUserMember, err := s.UsersService.GetConsistsGroups(ctx, user.FirstName)
+		if err != nil {
+			return nil, err
+		}
+
+		groups = append(groups, groupsWhichUserMember...)
+
+		userGroups := make([]int32, len(groups))
+		for idx, group := range groups {
+			userGroups[idx] = group.Id
+		}
+
+		return &proto.AuthResponse{
+			Status:     proto.Status_SUCCESS,
+			UserGroups: userGroups,
+		}, nil
 	}
 
 	err = s.UsersService.Add(ctx, adapter.ToUserEntity(user))
@@ -36,11 +56,11 @@ func (s *GrpcServer) AuthUser(ctx context.Context, user *proto.User) (*proto.Res
 		return nil, err
 	}
 
-	return &proto.Result{Status: proto.Status_SUCCESS}, nil
+	return &proto.AuthResponse{Status: proto.Status_SUCCESS}, nil
 }
 
 func (s *GrpcServer) GetUserGroups(ctx context.Context, req *proto.GroupsRequest) (*proto.GroupsResponse, error) {
-	groups, err := s.UsersService.GetGroups(ctx, req.OwnerId)
+	groups, err := s.UsersService.GetMyGroups(ctx, req.OwnerId)
 	if err != nil {
 		return nil, err
 	}

@@ -59,7 +59,7 @@ func (s *GroupService) RemoveUser(ctx context.Context, deletingUser string, owne
 }
 
 func (s *GroupService) getGroupMembers(ctx context.Context, groupId, ownerId int32) ([]string, error) {
-	query := `SELECT members FROM groups WHERE id = $1 AND ownerId = $2;`
+	query := `SELECT members FROM groups WHERE id = $1 AND ownerid = $2;`
 	var groupMembers []string
 
 	row := s.conn.QueryRow(ctx, query, groupId, ownerId)
@@ -72,7 +72,7 @@ func (s *GroupService) getGroupMembers(ctx context.Context, groupId, ownerId int
 }
 
 func (s *GroupService) setGroupMembers(ctx context.Context, members []string, groupId int32) error {
-	query := `UPDATE groups SET members = $1 WHERE groupId = $2;`
+	query := `UPDATE groups SET members = $1 WHERE id = $2;`
 	if _, err := s.conn.Exec(ctx, query, members, groupId); err != nil {
 		return err
 	}

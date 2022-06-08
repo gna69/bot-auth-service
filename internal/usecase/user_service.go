@@ -9,5 +9,6 @@ import (
 type UserService interface {
 	Add(ctx context.Context, user *entity.User) error
 	Get(ctx context.Context, userId int32) (*entity.User, error)
-	GetGroups(ctx context.Context, userId int32) ([]*entity.Group, error)
+	GetMyGroups(ctx context.Context, userId int32) ([]*entity.Group, error)
+	GetConsistsGroups(ctx context.Context, firstName string) ([]*entity.Group, error)
 }

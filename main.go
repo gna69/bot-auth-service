@@ -10,6 +10,7 @@ import (
 	"gitgub.com/gna69/bot-auth-service/internal/driver/grpc_server"
 	"gitgub.com/gna69/bot-auth-service/proto"
 
+	"github.com/jackc/pgx/v4"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 )
@@ -24,6 +25,12 @@ func main() {
 		log.Error().Msg(err.Error())
 		return
 	}
+	defer func(pgConn *pgx.Conn, ctx context.Context) {
+		err := pgConn.Close(ctx)
+		if err != nil {
+			log.Error().Msg(err.Error())
+		}
+	}(pgConn, ctx)
 	log.Debug().Str("pg", "success connection").Send()
 
 	userService := services.NewUserService(pgConn)
